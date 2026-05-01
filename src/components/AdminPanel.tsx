@@ -23,6 +23,47 @@ export default function AdminPanel() {
   const [expandedRegistrationGroups, setExpandedRegistrationGroups] = useState<Record<string, boolean>>({});
 
   const navigate = useNavigate();
+  const serializePalmaresCards = (profiles: any[] = []) => (
+    profiles
+      .slice(0, 2)
+      .map((profile) => [
+        profile?.name || '',
+        profile?.title || '',
+        profile?.record || '',
+        profile?.biography || '',
+        profile?.highlight || '',
+      ].join(' | '))
+      .join('\n')
+  );
+
+  const parsePalmaresCardsInput = (value: string, profiles: any[] = []) => {
+    const nextProfiles = normalizePalmaresProfiles({ palmaresProfiles: profiles });
+
+    String(value || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 2)
+      .forEach((line, index) => {
+        const [name = '', title = '', record = '', biography = '', highlight = ''] = line
+          .split('|')
+          .map(part => part.trim());
+        const currentProfile = nextProfiles[index] || defaultPalmaresProfiles[index] || defaultPalmaresProfiles[0];
+
+        nextProfiles[index] = {
+          ...currentProfile,
+          slug: currentProfile.slug,
+          name: name || currentProfile.name,
+          title,
+          record,
+          biography,
+          highlight,
+        };
+      });
+
+    return nextProfiles;
+  };
+
   const buildDesignItem = (item: any = {}) => {
     const palmaresProfiles = normalizePalmaresProfiles(item);
 
@@ -38,6 +79,7 @@ export default function AdminPanel() {
       youtubeUrl: item.youtubeUrl || '',
       whatsappUrl: item.whatsappUrl || '',
       palmaresProfiles,
+      palmaresCardsText: serializePalmaresCards(palmaresProfiles),
       palmaresCards: createLegacyPalmaresCards(palmaresProfiles),
     };
   };
@@ -319,7 +361,7 @@ export default function AdminPanel() {
     }
 
     if (activeTab === 'design') {
-      const section = cleanItem.designSection || 'hero';
+      const section = designSection || 'hero';
 
       if (section === 'location-config') {
         return {
@@ -365,6 +407,9 @@ export default function AdminPanel() {
       const media = cleanItem.heroMedia || '';
       const lowerMedia = String(media).toLowerCase();
       const isVideo = /\.(mp4|webm|ogg|mov)(\?|#|$)/.test(lowerMedia);
+      const palmaresProfiles = typeof cleanItem.palmaresCardsText === 'string'
+        ? parsePalmaresCardsInput(cleanItem.palmaresCardsText, designItem.palmaresProfiles)
+        : normalizePalmaresProfiles(designItem);
 
       return {
         ...designItem,
@@ -377,6 +422,8 @@ export default function AdminPanel() {
         facebookUrl: cleanItem.facebookUrl || designItem.facebookUrl || '',
         youtubeUrl: cleanItem.youtubeUrl || designItem.youtubeUrl || '',
         whatsappUrl: cleanItem.whatsappUrl || designItem.whatsappUrl || '',
+        palmaresProfiles,
+        palmaresCards: createLegacyPalmaresCards(palmaresProfiles),
       };
     }
 
@@ -1440,8 +1487,8 @@ export default function AdminPanel() {
 	              </label>
 	              <textarea
 	                className="w-full min-h-[170px] bg-black border border-white/10 p-4 rounded-xl text-white text-sm leading-relaxed placeholder:text-white/20"
-	                value={editingItem.palmaresCards || ''}
-	                onChange={e => setEditingItem({ ...editingItem, palmaresCards: e.target.value })}
+	                value={editingItem.palmaresCardsText || ''}
+	                onChange={e => setEditingItem({ ...editingItem, palmaresCardsText: e.target.value })}
 	                placeholder={`Bogdan Stoica | Multiplu Campion Mondial | 10+ titluri mondiale | Unul dintre cei mai spectaculoși luptători români, prezent în gale internaționale majore. | Superkombat / Glory / K-1\nAndrei Stoica | Campion mondial kickboxing | 20+ victorii prin KO | Forță, disciplină și experiență de main event aduse direct în sală. | Main Event / World Title / Heavy Hits`}
 	              />
 	              <p className="text-xs text-white/35 leading-relaxed">
