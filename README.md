@@ -1,20 +1,167 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🥊 Stoica Brothers Academy
 
-# Run and deploy your AI Studio app
+Site oficial pentru **Stoica Brothers Fight Academy** — un club sportiv de elită pentru arte marțiale și sporturi de contact, fondat de frații **Bogdan și Andrei Stoica**, campioni naționali și internaționali.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/00dc1b81-e09c-4087-9b6c-19e615aaaa3f
+## 📋 Descriere
 
-## Run Locally
+Platformă web modernă pentru prezentarea clubului, programărilor, antrenorilor și realizărilor sportivilor, un panel de administrare pentru gestionarea site-ului.
 
-**Prerequisites:**  Node.js
+---
 
+## 🛠️ Tehnologii
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+| Categorie | Tehnologii |
+|-----------|------------|
+| **Frontend** | React 19, Vite 6, TypeScript |
+| **Stilizare** | Tailwind CSS 4, Motion (framer-motion) |
+| **Animații** | GSAP, Embla Carousel |
+| **Backend** | Express.js, Node.js |
+| **Baze de date** | MongoDB (Mongoose) |
+| **Routing** | React Router DOM |
+| **Upload** | Multer (pentru imagini) |
+
+---
+
+## 🚀 Funcționalități
+
+### Pagini principale
+- **Acasă (Hero)** — Prezentare vizuală cu video/image background, animații cinematice
+- **Despre Noi** — Istoria clubului, palmares, galele de box
+- **Discipline** — Kickboxing, Box, MMA, BJJ — cu descrieri și caracteristici
+- **Antrenori** — Profilurile antrenorilor (Bogdan & Andrei Stoica)
+- **Program** — Orarul antrenamentelor pe zile
+- **Programe de antrenament** — Pachete de prețuri (Trial, Lunar, Anual)
+- **Competiții** — Rezultate și galele organizate
+- **Galerie** — Galerie foto și video
+- **Testimoniale** — Recenziile sportivilor
+- **Contact** — Formular de contact, hartă, informații
+
+### Funcționalități avansate
+- 🎥 **Integrare video** — YouTube embed pentru gale și clipuri
+- 🖼️ **Upload imagini** — Sistem de upload pentru galerii și profiluri
+- 🤖 **AI Generator** — Generare automată de conținut cu Gemini
+- ⚙️ **Admin Panel** — Panou de administrare pentru conținut
+- 📱 **Design responsiv** — Optimizat pentru mobil, tabletă, desktop
+- ✨ **Animații** — Tranziții smooth cu Motion și GSAP
+
+---
+
+## 📦 Instalare
+
+```bash
+# Clonează proiectul și navighează în folder
+cd STOICA-BR
+
+# Instalează dependențele
+npm install
+```
+
+### Variabile de mediu
+
+Creează un fișier `.env.local` în rădăcina proiectului:
+---
+
+## 🏃 Rulare
+
+```bash
+# Mod dezvoltare (server Express + Vite)
+npm run dev
+
+# Build producție
+npm run build
+
+# Previzualizare build
+npm run preview
+
+# Curățare build
+npm run clean
+
+# Verificare TypeScript
+npm run lint
+```
+
+---
+
+## 📁 Structura proiectului
+
+```
+STOICA-BR/
+├── src/
+│   ├── components/       # Componente React
+│   │   ├── About.tsx      # Despre noi
+│   │   ├── AdminPanel.tsx # Panou admin
+│   │   ├── Coaches.tsx    # Antrenori
+│   │   ├── Competitions.tsx
+│   │   ├── Contact.tsx
+│   │   ├── Disciplines.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Gallery.tsx
+│   │   ├── Hero.tsx       # Pagina principală
+│   │   ├── Navbar.tsx
+│   │   ├── Schedule.tsx
+│   │   ├── Testimonials.tsx
+│   │   └── ...
+│   ├── lib/
+│   │   ├── palmares.ts    # Palmares și realizări
+│   │   └── utils.ts       # Utilități
+│   ├── services/
+│   │   └── api.ts         # API calls
+│   ├── App.tsx            # Componenta principală
+│   ├── main.tsx           # Punct de intrare
+│   ├── constants.ts       # Date constante
+│   └── types.ts           # Tipuri TypeScript
+├── server.ts              # Server Express
+├── vite.config.ts         # Configurare Vite
+├── tsconfig.json          # Configurare TypeScript
+├── package.json
+└── README.md
+```
+
+---
+
+## 👥 Echipa
+
+### Fondatori
+- **Bogdan Stoica** — Campion național și internațional de box/Kickboxing
+- **Andrei Stoica** — Campion național și internațional de box/Kickboxing
+
+### Discipline predate
+- 🥊 **Kickboxing** — Arte marțiale cu opt membre
+- 🥖 **Box** — Nobile artă a autoapărării
+- 🅼️ **MMA** — Mixed Martial Arts
+- 🅱️ **BJJ** — Brazilian Jiu-Jitsu
+
+---
+
+## 🔧 Configurare avansată
+
+### MongoDB
+Proiectul folosește MongoDB pentru stocarea datelor. Configurează stringul de conexiune în `server.ts`.
+
+### Upload fișiere
+- Folder-ul `uploads/` stochează imaginile uploadate
+- Configurabil prin `multer` în server
+
+---
+
+## 📝 Licență
+
+Proprietar © 2026 Stoica Brothers Academy
+
+---
+
+## 📞 Contact
+
+- **Email:** contact@stoicabrothers.ro
+- **Telefon:** [număr de telefon]
+- **Locație:** [adresa clubului]
+
+---
+
+*Creat cu React, Vite și pasiunea pentru arte marțiale.*
+
+## 📄 Licență
+
+Proprietar
