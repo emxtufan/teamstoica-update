@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { motion, useScroll, useSpring } from 'motion/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -17,6 +17,7 @@ import FinalCTA from './components/FinalCTA';
 import Footer from './components/Footer';
 import CoachProfile from './components/CoachProfile';
 import DotField from './components/DotField';
+import InitialLoader from './components/InitialLoader';
 import { LocationConfigProvider } from './components/LocationConfigProvider';
 
 import FullGallery from './components/FullGallery';
@@ -66,6 +67,10 @@ function HomePage() {
 function AppLayout() {
   const location = useLocation();
   const isAdminRoute = location.pathname === '/admin';
+  const [isInitialLoading, setIsInitialLoading] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.location.pathname !== '/admin';
+  });
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -73,8 +78,57 @@ function AppLayout() {
     restDelta: 0.001
   });
 
+  useEffect(() => {
+    if (isAdminRoute) {
+      setIsInitialLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId: number | null = null;
+    const startedAt = performance.now();
+
+    const finishLoading = () => {
+      const remaining = Math.max(0, 1150 - (performance.now() - startedAt));
+      timeoutId = window.setTimeout(() => {
+        if (!cancelled) {
+          setIsInitialLoading(false);
+        }
+      }, remaining);
+    };
+
+    if (document.readyState === 'complete') {
+      finishLoading();
+    } else {
+      window.addEventListener('load', finishLoading, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('load', finishLoading);
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [isAdminRoute]);
+
+  useEffect(() => {
+    if (!isInitialLoading) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isInitialLoading]);
+
   return (
       <div className={`dotfield-page relative min-h-screen bg-black text-white selection:bg-accent selection:text-black ${isAdminRoute ? 'admin-route' : ''}`}>
+        <InitialLoader visible={!isAdminRoute && isInitialLoading} />
         <div className="pointer-events-none fixed inset-0 z-0 opacity-90">
           <DotField
             dotRadius={2.2}

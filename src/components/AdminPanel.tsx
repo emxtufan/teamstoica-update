@@ -71,7 +71,10 @@ export default function AdminPanel() {
       ...item,
       key: 'main',
       heroMedia: item.heroMedia || '',
+      heroMediaMobile: item.heroMediaMobile || '',
+      heroMediaDesktop: item.heroMediaDesktop || '',
       heroMediaType: item.heroMediaType || '',
+      heroMediaMobileType: item.heroMediaMobileType || '',
       siteLogo: item.siteLogo || '',
       ctaSectionPhoto: item.ctaSectionPhoto || '',
       instagramUrl: item.instagramUrl || '',
@@ -82,6 +85,12 @@ export default function AdminPanel() {
       palmaresCardsText: serializePalmaresCards(palmaresProfiles),
       palmaresCards: createLegacyPalmaresCards(palmaresProfiles),
     };
+  };
+
+  const isVideoAsset = (url?: string, type?: string) => {
+    if (type === 'video') return true;
+    if (type === 'image') return false;
+    return /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url || ''));
   };
 
   useEffect(() => {
@@ -415,7 +424,10 @@ export default function AdminPanel() {
         ...designItem,
         key: 'main',
         heroMedia: media,
+        heroMediaMobile: cleanItem.heroMediaMobile || designItem.heroMediaMobile || '',
+        heroMediaDesktop: cleanItem.heroMediaDesktop || designItem.heroMediaDesktop || '',
         heroMediaType: cleanItem.heroMediaType || (isVideo ? 'video' : 'image'),
+        heroMediaMobileType: cleanItem.heroMediaMobileType || designItem.heroMediaMobileType || '',
         siteLogo: cleanItem.siteLogo || designItem.siteLogo || '',
         ctaSectionPhoto: cleanItem.ctaSectionPhoto || designItem.ctaSectionPhoto || '',
         instagramUrl: cleanItem.instagramUrl || designItem.instagramUrl || '',
@@ -676,6 +688,93 @@ export default function AdminPanel() {
       </div>
     );
 
+    const HeroMediaField = ({
+      title,
+      field,
+      typeField,
+      aspectClass,
+      ratioLabel,
+      helperText,
+    }: {
+      title: string;
+      field: string;
+      typeField: string;
+      aspectClass: string;
+      ratioLabel: string;
+      helperText: string;
+    }) => {
+      const mediaUrl = getAssetUrl(editingItem[field]);
+      const mediaType = editingItem[typeField] || '';
+      const showVideo = isVideoAsset(editingItem[field], mediaType);
+
+      return (
+        <div className="space-y-4 rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,#171717_0%,#070707_48%,#250606_100%)] p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">{title}</p>
+              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-white/35">{ratioLabel}</p>
+            </div>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-white/55">
+              {mediaType || 'auto detect'}
+            </span>
+          </div>
+
+          <div className={`overflow-hidden rounded-3xl border border-white/10 bg-black/50 ${aspectClass}`}>
+            {mediaUrl ? (
+              showVideo ? (
+                <video
+                  src={mediaUrl}
+                  className="h-full w-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                />
+              ) : (
+                <img
+                  src={mediaUrl}
+                  alt={title}
+                  className="h-full w-full object-cover"
+                />
+              )
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(145deg,#111_0%,#050505_50%,#1e0606_100%)] text-center text-[10px] font-black uppercase tracking-[0.22em] text-white/25">
+                Preview {ratioLabel}
+              </div>
+            )}
+          </div>
+
+          <div className="grid gap-4">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="URL imagine sau video"
+                className="flex-1 rounded-xl border border-white/10 bg-black p-4 text-sm"
+                value={editingItem[field] || ''}
+                onChange={e => setEditingItem({ ...editingItem, [field]: e.target.value })}
+              />
+              <label className="flex cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 hover:bg-accent transition-all">
+                <input type="file" className="hidden" onChange={e => handleFileUpload(e, field)} />
+                <ImageIcon size={20} />
+              </label>
+            </div>
+
+            <select
+              className="w-full rounded-xl border border-white/10 bg-black p-4 text-white [color-scheme:dark]"
+              value={editingItem[typeField] || ''}
+              onChange={e => setEditingItem({ ...editingItem, [typeField]: e.target.value })}
+            >
+              <option className="bg-black text-white" value="">Auto detect</option>
+              <option className="bg-black text-white" value="image">Imagine</option>
+              <option className="bg-black text-white" value="video">Video</option>
+            </select>
+          </div>
+
+          <p className="text-xs leading-relaxed text-white/40">{helperText}</p>
+        </div>
+      );
+    };
+
     if (activeTab === 'design') {
       return editingItem?.designSection === 'palmares' ? (
         <div className="space-y-4">
@@ -832,18 +931,26 @@ export default function AdminPanel() {
         </div>
       ) : (
         <div className="space-y-4">
-          <ImageField label="Hero media (poza sau video)" field="heroMedia" />
-          <select
-            className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
-            value={editingItem.heroMediaType || ''}
-            onChange={e => setEditingItem({...editingItem, heroMediaType: e.target.value})}
-          >
-            <option className="bg-black text-white" value="">Auto detect</option>
-            <option className="bg-black text-white" value="image">Imagine</option>
-            <option className="bg-black text-white" value="video">Video</option>
-          </select>
+          <div className="grid gap-5 xl:grid-cols-[1.35fr_0.8fr]">
+            <HeroMediaField
+              title="Hero Desktop"
+              field="heroMedia"
+              typeField="heroMediaType"
+              aspectClass="aspect-video min-h-[240px]"
+              ratioLabel="16:9"
+              helperText="Incarca media pentru ecrane mari. Poate fi imagine sau video."
+            />
+            <HeroMediaField
+              title="Hero Mobil"
+              field="heroMediaMobile"
+              typeField="heroMediaMobileType"
+              aspectClass="mx-auto aspect-[9/16] min-h-[320px] max-w-[230px]"
+              ratioLabel="9:16"
+              helperText="Incarca media dedicata pentru telefon. Daca lipseste, site-ul foloseste varianta desktop."
+            />
+          </div>
           <p className="text-xs text-white/35 leading-relaxed">
-            Incarca un fisier in server sau pune URL. Daca este video (.mp4, .webm, .ogg, .mov), Hero il afiseaza ca video; altfel il afiseaza ca imagine.
+            Editorul Hero are acum upload si preview separat pentru fiecare format, direct in modal.
           </p>
         </div>
       );
@@ -1468,18 +1575,36 @@ export default function AdminPanel() {
 	      case 'design':
 	        return (
 	          <div className="space-y-4">
-	            <ImageField label="Hero media (poza sau video)" field="heroMedia" />
-	            <select
-	              className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
-	              value={editingItem.heroMediaType || ''}
-	              onChange={e => setEditingItem({...editingItem, heroMediaType: e.target.value})}
-	            >
-	              <option className="bg-black text-white" value="">Auto detect</option>
-	              <option className="bg-black text-white" value="image">Imagine</option>
-	              <option className="bg-black text-white" value="video">Video</option>
-	            </select>
+	            <div className="grid gap-4 md:grid-cols-2">
+	              <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+	                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Hero Desktop</p>
+	                <ImageField label="Media Hero desktop" field="heroMedia" />
+	                <select
+	                  className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
+	                  value={editingItem.heroMediaType || ''}
+	                  onChange={e => setEditingItem({...editingItem, heroMediaType: e.target.value})}
+	                >
+	                  <option className="bg-black text-white" value="">Auto detect</option>
+	                  <option className="bg-black text-white" value="image">Imagine</option>
+	                  <option className="bg-black text-white" value="video">Video</option>
+	                </select>
+	              </div>
+	              <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+	                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Hero Mobil</p>
+	                <ImageField label="Media Hero mobil" field="heroMediaMobile" />
+	                <select
+	                  className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
+	                  value={editingItem.heroMediaMobileType || ''}
+	                  onChange={e => setEditingItem({...editingItem, heroMediaMobileType: e.target.value})}
+	                >
+	                  <option className="bg-black text-white" value="">Auto detect</option>
+	                  <option className="bg-black text-white" value="image">Imagine</option>
+	                  <option className="bg-black text-white" value="video">Video</option>
+	                </select>
+	              </div>
+	            </div>
 	            <p className="text-xs text-white/35 leading-relaxed">
-	              Incarca un fisier in server sau pune URL. Daca este video (.mp4, .webm, .ogg, .mov), Hero il afiseaza ca video; altfel il afiseaza ca imagine.
+	              Ai acum doua sectiuni separate: una pentru Hero desktop si una pentru Hero mobil. Fiecare poate avea independent imagine sau video.
 	            </p>
 	            <div className="space-y-2">
 	              <label className="block text-[10px] font-black uppercase tracking-[0.22em] text-white/45">
@@ -1628,37 +1753,98 @@ export default function AdminPanel() {
                 <div className="py-20 text-center text-white/20 uppercase text-xs font-bold tracking-widest">Loading...</div>
 	              ) : activeTab === 'design' ? (
                 <div className="space-y-6">
-                  <div className="rounded-3xl border border-white/10 bg-black/20 p-6">
-                    <div className="mb-5 border-b border-white/10 pb-5">
-                      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">1. Imagine Hero</p>
-                    </div>
-                    <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-                      <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/40">
-                        {(items[0]?.heroMedia || '').match(/\.(mp4|webm|ogg|mov)(\?|#|$)/i) || items[0]?.heroMediaType === 'video' ? (
-                          <video className="h-full max-h-[420px] w-full object-cover" src={getAssetUrl(items[0]?.heroMedia)} muted loop playsInline autoPlay />
-                        ) : items[0]?.heroMedia ? (
-                          <img src={getAssetUrl(items[0]?.heroMedia)} alt="Hero preview" className="h-full max-h-[420px] w-full object-cover" />
-                        ) : (
-                          <div className="flex min-h-[320px] items-center justify-center bg-[linear-gradient(145deg,#171717_0%,#070707_48%,#250606_100%)] text-sm font-bold uppercase tracking-[0.2em] text-white/25">
-                            Hero media preview
-                          </div>
-                        )}
-                      </div>
-                      <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Hero settings</p>
-                        <h4 className="mt-3 text-2xl font-display font-black uppercase tracking-tight text-white">Sectiunea principala</h4>
-                        <p className="mt-4 text-sm leading-relaxed text-white/55">
-                          Aici setezi media principala din hero. Poti urca o imagine sau un video si alegi manual tipul doar daca vrei sa fortezi afisarea.
-                        </p>
-                        <button
-                          onClick={() => handleEdit(items[0] || buildDesignItem({}))}
-                          className="mt-6 flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
-                        >
-                          <Settings size={14} /> Editeaza Hero
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+	                  <div className="rounded-3xl border border-white/10 bg-black/20 p-6">
+	                    <div className="mb-5 border-b border-white/10 pb-5">
+	                      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">1. Imagine Hero</p>
+	                    </div>
+	                    <div className="grid items-start gap-3 lg:grid-cols-[0.72fr_1.28fr]">
+	                      <div className="flex h-[304px] flex-col rounded-3xl border border-white/10 bg-black/30 p-5">
+	                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Hero settings</p>
+	                        <h4 className="mt-3 text-2xl font-display font-black uppercase tracking-tight text-white">Sectiunea principala</h4>
+	                        <p className="mt-4 text-sm leading-relaxed text-white/55">
+	                          Aici setezi doua versiuni independente pentru hero: una pentru desktop si una pentru mobil. Fiecare poate fi imagine sau video.
+	                        </p>
+	                        {/* <div className="mt-4 grid gap-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white/35">
+	                          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+	                            Mobil: {items[0]?.heroMediaMobile ? (items[0]?.heroMediaMobileType || 'auto detect') : 'neconfigurat'}
+	                          </div>
+	                          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+	                            Desktop: {items[0]?.heroMedia ? (items[0]?.heroMediaType || 'auto detect') : 'neconfigurat'}
+	                          </div>
+	                        </div> */}
+	                        <button
+	                          onClick={() => handleEdit(items[0] || buildDesignItem({}))}
+	                          className="mt-auto flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+	                        >
+	                          <Settings size={14} /> Editeaza Hero
+	                        </button>
+	                      </div>
+	                      <div className="grid items-start gap-3 lg:grid-cols-[0.62fr_1fr]">
+	                        <div className="self-start overflow-hidden rounded-3xl border border-white/10 bg-black/40">
+	                          <div className="flex items-center justify-between border-b border-white/10 bg-black/30 px-3 py-2.5">
+	                            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Mobile Preview</p>
+	                            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">9:16</span>
+	                          </div>
+	                          <div className="flex h-[250px] items-center justify-center p-2">
+	                            <div className="h-full aspect-[9/16] overflow-hidden rounded-[24px] border border-white/10 bg-black/50">
+	                              {items[0]?.heroMediaMobile ? (
+	                                isVideoAsset(items[0]?.heroMediaMobile, items[0]?.heroMediaMobileType) ? (
+	                                  <video
+	                                    className="h-full w-full object-cover"
+	                                    src={getAssetUrl(items[0]?.heroMediaMobile)}
+	                                    muted
+	                                    loop
+	                                    playsInline
+	                                    autoPlay
+	                                  />
+	                                ) : (
+	                                  <img
+	                                    src={getAssetUrl(items[0]?.heroMediaMobile)}
+	                                    alt="Hero mobile preview"
+	                                    className="h-full w-full object-cover"
+	                                  />
+	                                )
+	                              ) : (
+	                                <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(145deg,#171717_0%,#070707_48%,#250606_100%)] text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/25">
+	                                  Mobile hero
+	                                </div>
+	                              )}
+	                            </div>
+	                          </div>
+	                        </div>
+	                        <div className="self-start overflow-hidden rounded-3xl border border-white/10 bg-black/40">
+	                          <div className="flex items-center justify-between border-b border-white/10 bg-black/30 px-3 py-2.5">
+	                            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Desktop Preview</p>
+	                            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">16:9</span>
+	                          </div>
+	                          <div className="h-[250px]">
+	                            {items[0]?.heroMedia ? (
+	                              isVideoAsset(items[0]?.heroMedia, items[0]?.heroMediaType) ? (
+	                                <video
+	                                  className="h-full w-full object-cover"
+	                                  src={getAssetUrl(items[0]?.heroMedia)}
+	                                  muted
+	                                  loop
+	                                  playsInline
+	                                  autoPlay
+	                                />
+	                              ) : (
+	                                <img
+	                                  src={getAssetUrl(items[0]?.heroMedia)}
+	                                  alt="Hero desktop preview"
+	                                  className="h-full w-full object-cover"
+	                                />
+	                              )
+	                            ) : (
+	                              <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(145deg,#171717_0%,#070707_48%,#250606_100%)] text-sm font-bold uppercase tracking-[0.2em] text-white/25">
+	                                Desktop hero
+	                              </div>
+	                            )}
+	                          </div>
+	                        </div>
+	                      </div>
+	                    </div>
+	                  </div>
 
                   <div className="rounded-3xl border border-white/10 bg-black/20 p-6">
                     <div className="mb-5 border-b border-white/10 pb-5">
@@ -2559,7 +2745,9 @@ export default function AdminPanel() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/5 border border-white/10 p-8 rounded-3xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto"
+            className={`bg-white/5 border border-white/10 p-8 rounded-3xl w-full relative max-h-[90vh] overflow-y-auto ${
+              activeTab === 'design' && editingItem.designSection === 'hero' ? 'max-w-6xl' : 'max-w-lg'
+            }`}
           >
             <button onClick={() => setEditingItem(null)} className="absolute top-6 right-6 text-white/30 hover:text-white">
               <X size={20} />

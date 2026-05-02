@@ -176,13 +176,13 @@ export default function About() {
   }, []);
 
   return (
-    <section id="despre" className="py-16 lg:py-32 bg-black overflow-x-clip">
+    <section id="despre" className="bg-black py-16 overflow-x-clip lg:pt-20 lg:pb-32">
       <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1 }}
             >

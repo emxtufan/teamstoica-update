@@ -178,7 +178,10 @@ const LocationConfig = mongoose.model('LocationConfig', locationConfigSchema);
 const designSettingSchema = new mongoose.Schema({
   key: { type: String, unique: true },
   heroMedia: String,
+  heroMediaMobile: String,
+  heroMediaDesktop: String,
   heroMediaType: String,
+  heroMediaMobileType: String,
   siteLogo: String,
   ctaSectionPhoto: String,
   instagramUrl: String,

@@ -12,34 +12,34 @@ export const NAV_LINKS: NavLink[] = [
 ];
 
 export const DISCIPLINES: Discipline[] = [
-  {
-    id: 'kickboxing',
-    title: 'Kickboxing',
-    description: 'Arta celor opt membre. Antrenament intens pentru disciplină, viteză și putere sub îndrumarea campionilor.',
-    image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=2000&auto=format&fit=crop',
-    features: ['Tehnică de elită', 'Condiționare fizică', 'Autoapărare', 'Nivel Pro & Amatori']
-  },
-  {
-    id: 'box',
-    title: 'Box',
-    description: 'Nobila artă a autoapărării. Concentrare pe footwork, coordonare și forță explozivă.',
-    image: 'https://images.unsplash.com/photo-1549476464-37392f719918?q=80&w=2000&auto=format&fit=crop',
-    features: ['Tehnică brațe', 'Strategie ring', 'Rezistență cardio', 'Sparring controlat']
-  },
-  {
-    id: 'mma',
-    title: 'MMA',
-    description: 'Mixul suprem de arte marțiale. Combină striking, grappling și luptă la sol pentru performanță completă.',
-    image: 'https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?q=80&w=2000&auto=format&fit=crop',
-    features: ['Tranziții striking-grappling', 'Luptă la cușcă', 'Conditionare MMA', 'Versatilitate']
-  },
-  {
-    id: 'bjj',
-    title: 'BJJ',
-    description: 'Brazilian Jiu-Jitsu. Știința controlului la sol și a finalizărilor tehnice prin pârghii și presiune.',
-    image: 'https://images.unsplash.com/photo-1599058917233-57c0e88cfc8b?q=80&w=2000&auto=format&fit=crop',
-    features: ['Tehnică sol', 'Grappling', 'Flexibilitate', 'Problematizare strategică']
-  }
+  // {
+  //   id: 'kickboxing',
+  //   title: 'Kickboxing',
+  //   description: 'Arta celor opt membre. Antrenament intens pentru disciplină, viteză și putere sub îndrumarea campionilor.',
+  //   image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=2000&auto=format&fit=crop',
+  //   features: ['Tehnică de elită', 'Condiționare fizică', 'Autoapărare', 'Nivel Pro & Amatori']
+  // },
+  // {
+  //   id: 'box',
+  //   title: 'Box',
+  //   description: 'Nobila artă a autoapărării. Concentrare pe footwork, coordonare și forță explozivă.',
+  //   image: 'https://images.unsplash.com/photo-1549476464-37392f719918?q=80&w=2000&auto=format&fit=crop',
+  //   features: ['Tehnică brațe', 'Strategie ring', 'Rezistență cardio', 'Sparring controlat']
+  // },
+  // {
+  //   id: 'mma',
+  //   title: 'MMA',
+  //   description: 'Mixul suprem de arte marțiale. Combină striking, grappling și luptă la sol pentru performanță completă.',
+  //   image: 'https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?q=80&w=2000&auto=format&fit=crop',
+  //   features: ['Tranziții striking-grappling', 'Luptă la cușcă', 'Conditionare MMA', 'Versatilitate']
+  // },
+  // {
+  //   id: 'bjj',
+  //   title: 'BJJ',
+  //   description: 'Brazilian Jiu-Jitsu. Știința controlului la sol și a finalizărilor tehnice prin pârghii și presiune.',
+  //   image: 'https://images.unsplash.com/photo-1599058917233-57c0e88cfc8b?q=80&w=2000&auto=format&fit=crop',
+  //   features: ['Tehnică sol', 'Grappling', 'Flexibilitate', 'Problematizare strategică']
+  // }
 ];
 
 export const PRICING: PricingPlan[] = [
