@@ -90,12 +90,12 @@ function FightGalaCard({ gala, idx, activeVideo, setActiveVideo }: FightGalaCard
             {[gala.location, gala.years].filter(Boolean).join(' | ') || 'Gala internationala'}
           </p>
         </div>
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-black/70 p-2 ring-2 ring-white/5">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-black/85 ring-2 ring-white/5">
           {gala.logo ? (
             <img
               src={getAssetUrl(gala.logo)}
               alt={gala.name || 'Gala'}
-              className="h-full w-full object-contain grayscale transition-all duration-500 hover:grayscale-0"
+              className="h-full w-full object-cover grayscale transition-all duration-500 hover:scale-105 hover:grayscale-0"
             />
           ) : (
             <span className="font-display text-sm font-black text-white/35">

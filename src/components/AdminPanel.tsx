@@ -2335,12 +2335,12 @@ export default function AdminPanel() {
 
                           <div className="mt-5">
                             <div className="flex items-center gap-4">
-                              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-black/85">
                                 {item.logo ? (
                                   <img
                                     src={getAssetUrl(item.logo)}
                                     alt={item.name || 'Gala'}
-                                    className="h-full w-full object-contain"
+                                    className="h-full w-full object-cover"
                                   />
                                 ) : (
                                   <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/25">
