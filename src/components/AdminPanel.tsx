@@ -451,6 +451,10 @@ export default function AdminPanel() {
       return {
         ...cleanItem,
         order: Number(cleanItem.order || 0),
+        mediaStatus: cleanItem.mediaStatus || 'video',
+        eventDateLabel: cleanItem.eventDateLabel || '',
+        waitTitle: cleanItem.waitTitle || '',
+        waitSubtitle: cleanItem.waitSubtitle || '',
       };
     }
 
@@ -1483,6 +1487,37 @@ export default function AdminPanel() {
 	              value={editingItem.youtubeUrl || ''}
 	              onChange={e => setEditingItem({...editingItem, youtubeUrl: e.target.value})}
 	            />
+              <select
+                className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
+                value={editingItem.mediaStatus || 'video'}
+                onChange={e => setEditingItem({ ...editingItem, mediaStatus: e.target.value })}
+              >
+                <option className="bg-black text-white" value="video">Video disponibil</option>
+                <option className="bg-black text-white" value="live">Meci live acum</option>
+                <option className="bg-black text-white" value="upcoming">Urmeaza meciul</option>
+              </select>
+              <input
+                placeholder="Text data / ora afisata pe card (ex: 24 Mai - 21:00)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.eventDateLabel || ''}
+                onChange={e => setEditingItem({ ...editingItem, eventDateLabel: e.target.value })}
+              />
+              {(editingItem.mediaStatus === 'live' || editingItem.mediaStatus === 'upcoming') && (
+                <>
+                  <input
+                    placeholder="Titlu wait card (ex: Meciul incepe in curand)"
+                    className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                    value={editingItem.waitTitle || ''}
+                    onChange={e => setEditingItem({ ...editingItem, waitTitle: e.target.value })}
+                  />
+                  <textarea
+                    placeholder="Mesaj wait card (ex: Video-ul complet apare dupa finalizarea evenimentului.)"
+                    className="w-full min-h-[110px] bg-black border border-white/10 p-4 rounded-xl"
+                    value={editingItem.waitSubtitle || ''}
+                    onChange={e => setEditingItem({ ...editingItem, waitSubtitle: e.target.value })}
+                  />
+                </>
+              )}
 	            <div className="grid md:grid-cols-2 gap-4">
 	              <input
 	                placeholder="Website / link optional"
@@ -2357,7 +2392,11 @@ export default function AdminPanel() {
                               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white/60">
                                 {item.years || 'Perioada'}
                               </span>
-                              {item.youtubeUrl && (
+                              {(item.mediaStatus === 'live' || item.mediaStatus === 'upcoming') ? (
+                                <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-amber-300">
+                                  {item.mediaStatus === 'live' ? 'Live' : 'Wait'}
+                                </span>
+                              ) : item.youtubeUrl && (
                                 <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-accent">
                                   Video
                                 </span>

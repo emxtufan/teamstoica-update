@@ -128,6 +128,10 @@ const fightGalaSchema = new mongoose.Schema({
   description: String,
   website: String,
   youtubeUrl: String,
+  mediaStatus: String,
+  eventDateLabel: String,
+  waitTitle: String,
+  waitSubtitle: String,
   order: { type: Number, default: 0 },
 });
 const FightGala = mongoose.model('FightGala', fightGalaSchema);

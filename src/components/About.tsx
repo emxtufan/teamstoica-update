@@ -15,6 +15,10 @@ type FightGala = {
   description?: string;
   website?: string;
   youtubeUrl?: string;
+  mediaStatus?: 'video' | 'live' | 'upcoming';
+  eventDateLabel?: string;
+  waitTitle?: string;
+  waitSubtitle?: string;
 };
 
 type DesignSettings = {
@@ -62,6 +66,15 @@ function FightGalaCard({ gala, idx, activeVideo, setActiveVideo }: FightGalaCard
   const videoId = getYouTubeId(gala.youtubeUrl);
   const videoKey = `${gala._id || gala.name || idx}-${videoId}`;
   const isActive = activeVideo === videoKey;
+  const mediaStatus = gala.mediaStatus === 'live' || gala.mediaStatus === 'upcoming' ? gala.mediaStatus : 'video';
+  const showWaitingState = mediaStatus !== 'video';
+  const waitBadge = mediaStatus === 'live' ? 'Live acum' : 'Urmeaza meciul';
+  const waitTitle = gala.waitTitle || (mediaStatus === 'live' ? 'Meciul este in direct' : 'Meciul incepe in curand');
+  const waitSubtitle = gala.waitSubtitle || (
+    mediaStatus === 'live'
+      ? 'Video-ul complet se afiseaza dupa incheierea meciului.'
+      : 'Momentan pregatim transmisia. Revino dupa finalizarea evenimentului.'
+  );
 
   return (
     <div
@@ -99,7 +112,27 @@ function FightGalaCard({ gala, idx, activeVideo, setActiveVideo }: FightGalaCard
           )}
         </div>
       </div>
-      {!videoId ? (
+      {showWaitingState ? (
+        <div className="relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_top,#7f1d1d_0%,#1a0707_38%,#050505_100%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_38%,transparent_68%,rgba(255,255,255,0.04))]" />
+          <div className="absolute -left-10 top-1/2 h-28 w-28 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl" />
+          <div className="absolute -right-8 bottom-4 h-24 w-24 rounded-full border border-white/10 bg-white/[0.04]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.42))]" />
+          <div className="relative flex h-full items-center justify-center p-5 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-4 py-2 text-[9px] font-black uppercase tracking-[0.22em] text-white/85">
+                <span className={`inline-flex h-2.5 w-2.5 rounded-full ${mediaStatus === 'live' ? 'bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.95)]' : 'bg-accent shadow-[0_0_18px_rgba(196,30,58,0.65)]'}`} />
+                {waitBadge}
+              </div>
+              {gala.eventDateLabel && (
+                <span className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-white/55">
+                  {gala.eventDateLabel}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : !videoId ? (
         <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl md:rounded-2xl xl:rounded-xl border border-white/10 bg-black/50 text-center text-[9px] font-black uppercase tracking-widest text-white/25">
           Adauga video YouTube
         </div>
