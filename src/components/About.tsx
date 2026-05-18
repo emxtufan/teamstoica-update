@@ -17,8 +17,6 @@ type FightGala = {
   youtubeUrl?: string;
   mediaStatus?: 'video' | 'live' | 'upcoming';
   eventDateLabel?: string;
-  waitTitle?: string;
-  waitSubtitle?: string;
 };
 
 type DesignSettings = {
@@ -69,12 +67,6 @@ function FightGalaCard({ gala, idx, activeVideo, setActiveVideo }: FightGalaCard
   const mediaStatus = gala.mediaStatus === 'live' || gala.mediaStatus === 'upcoming' ? gala.mediaStatus : 'video';
   const showWaitingState = mediaStatus !== 'video';
   const waitBadge = mediaStatus === 'live' ? 'Live acum' : 'Urmeaza meciul';
-  const waitTitle = gala.waitTitle || (mediaStatus === 'live' ? 'Meciul este in direct' : 'Meciul incepe in curand');
-  const waitSubtitle = gala.waitSubtitle || (
-    mediaStatus === 'live'
-      ? 'Video-ul complet se afiseaza dupa incheierea meciului.'
-      : 'Momentan pregatim transmisia. Revino dupa finalizarea evenimentului.'
-  );
 
   return (
     <div
