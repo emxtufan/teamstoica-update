@@ -63,11 +63,26 @@ const scheduleSchema = new mongoose.Schema({
   time: String,
   title: String,
   type: String,
+  color: String,
   trainerId: String,
   trainer: String,
   trainerColor: String,
 });
 const Schedule = mongoose.model('Schedule', scheduleSchema);
+
+const scheduleGroupSchema = new mongoose.Schema({
+  location: String,
+  days: [String],
+  time: String,
+  title: String,
+  type: String,
+  color: String,
+  trainerId: String,
+  trainer: String,
+  note: String,
+  order: { type: Number, default: 0 },
+});
+const ScheduleGroup = mongoose.model('ScheduleGroup', scheduleGroupSchema);
 
 const coachSchema = new mongoose.Schema({
   id: String,
@@ -271,6 +286,11 @@ app.get('/api/schedule', async (req, res) => {
   res.json(data);
 });
 
+app.get('/api/schedule-groups', async (req, res) => {
+  const data = await ScheduleGroup.find().sort({ order: 1, location: 1, title: 1 });
+  res.json(data);
+});
+
 app.get('/api/coaches', async (req, res) => {
   const data = await Coach.find();
   res.json(data);
@@ -400,6 +420,21 @@ app.put('/api/admin/schedule/:id', isAdmin, async (req, res) => {
 });
 app.delete('/api/admin/schedule/:id', isAdmin, async (req, res) => {
   await Schedule.findByIdAndDelete(req.params.id);
+  res.json({ message: 'Deleted' });
+});
+
+// Schedule Groups
+app.post('/api/admin/schedule-groups', isAdmin, async (req, res) => {
+  const newItem = new ScheduleGroup(req.body);
+  await newItem.save();
+  res.json(newItem);
+});
+app.put('/api/admin/schedule-groups/:id', isAdmin, async (req, res) => {
+  const updatedItem = await ScheduleGroup.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(updatedItem);
+});
+app.delete('/api/admin/schedule-groups/:id', isAdmin, async (req, res) => {
+  await ScheduleGroup.findByIdAndDelete(req.params.id);
   res.json({ message: 'Deleted' });
 });
 

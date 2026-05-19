@@ -33,6 +33,10 @@ export const api = {
     const res = await fetch(`${API_URL}/schedule`);
     return res.json();
   },
+  async getScheduleGroups() {
+    const res = await fetch(`${API_URL}/schedule-groups`);
+    return res.json();
+  },
   async getCoaches() {
     const res = await fetch(`${API_URL}/coaches`);
     return res.json();

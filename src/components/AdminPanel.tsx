@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { api, getAssetUrl } from '../services/api';
 import { createLegacyPalmaresCards, defaultPalmaresProfiles, normalizePalmaresProfiles } from '../lib/palmares';
+import { cn } from '../lib/utils';
 import { 
 	  Settings, Trash2, Plus, 
 		  Dumbbell, Calendar, Users, 
@@ -9,6 +10,8 @@ import {
 			  LogOut, ShieldCheck, X, Inbox, Trophy, ClipboardList, Award, MonitorPlay, ChevronDown, MapPin, MessageSquare, Star
 			} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+const WEEK_DAYS = ['Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata'];
 
 export default function AdminPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -117,9 +120,9 @@ export default function AdminPanel() {
     setLoading(true);
     try {
       let data: any[] = [];
-      const shouldLoadCoaches = ['schedule', 'coaches', 'competitions'].includes(activeTab);
+      const shouldLoadCoaches = ['schedule', 'schedule-groups', 'coaches', 'competitions'].includes(activeTab);
       const shouldLoadRegistrations = ['competitions', 'registrations'].includes(activeTab);
-      const shouldLoadLocationConfigs = ['schedule', 'config', 'coaches', 'design'].includes(activeTab);
+      const shouldLoadLocationConfigs = ['schedule', 'schedule-groups', 'config', 'coaches', 'design'].includes(activeTab);
       const coaches = shouldLoadCoaches ? await api.getCoaches() : coachOptions;
       const registrations = shouldLoadRegistrations ? await api.getCompetitionRegistrations() : registrationOptions;
       const locationConfigs = shouldLoadLocationConfigs ? await api.getLocationConfigs() : locationConfigOptions;
@@ -139,6 +142,7 @@ export default function AdminPanel() {
       switch (activeTab) {
 	        case 'martial-arts': data = await api.getMartialArts(); break;
 	        case 'schedule': data = await api.getSchedule(); break;
+          case 'schedule-groups': data = await api.getScheduleGroups(); break;
 	        case 'design':
 	          data = await api.getDesign().then(result => [buildDesignItem(result || {})]);
 	          break;
@@ -307,6 +311,126 @@ export default function AdminPanel() {
     }));
   };
 
+  const scheduleColorOptions = [
+    { label: 'Orange', value: '#f97316' },
+    { label: 'Albastru', value: '#2563eb' },
+    { label: 'Rosu', value: '#dc2626' },
+    { label: 'Verde', value: '#16a34a' },
+    { label: 'Galben deschis', value: '#facc15' },
+    { label: 'Mov', value: '#9333ea' },
+  ];
+
+  const ColorField = ({ label, field }: { label: string; field: string }) => {
+    const colorValue = String(editingItem?.[field] || '').trim();
+    const hasPresetColor = scheduleColorOptions.some(option => option.value.toLowerCase() === colorValue.toLowerCase());
+    const showCustomColor = !hasPresetColor && colorValue.length > 0;
+
+    return (
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <div className="flex items-center justify-between gap-3">
+          <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/45">
+            {label}
+          </label>
+          {colorValue ? (
+            <button
+              type="button"
+              onClick={() => setEditingItem({ ...editingItem, [field]: '' })}
+              className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35 transition-colors hover:text-accent"
+            >
+              Reset
+            </button>
+          ) : null}
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {scheduleColorOptions.map(option => {
+            const selected = option.value.toLowerCase() === colorValue.toLowerCase();
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setEditingItem({ ...editingItem, [field]: option.value })}
+                className={cn(
+                  'flex items-center gap-3 rounded-xl border px-3 py-3 text-left transition-all',
+                  selected
+                    ? 'border-white/40 bg-white/[0.08] text-white'
+                    : 'border-white/10 bg-black/40 text-white/70 hover:border-white/25 hover:text-white',
+                )}
+              >
+                <span
+                  className="h-5 w-5 shrink-0 rounded-full border border-white/20"
+                  style={{ backgroundColor: option.value }}
+                />
+                <span className="text-[11px] font-black uppercase tracking-[0.14em]">
+                  {option.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setEditingItem({ ...editingItem, [field]: hasPresetColor ? '#c41e3a' : (colorValue || '#c41e3a') })}
+            className={cn(
+              'rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-all',
+              showCustomColor
+                ? 'border-accent bg-accent text-white'
+                : 'border-white/10 bg-black/40 text-white/65 hover:border-accent hover:text-accent',
+            )}
+          >
+            Add new color
+          </button>
+
+          {colorValue ? (
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-2">
+              <span
+                className="h-3 w-3 rounded-full border border-white/20"
+                style={{ backgroundColor: colorValue }}
+              />
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white/55">
+                {hasPresetColor ? 'Preset selectat' : colorValue}
+              </span>
+            </div>
+          ) : null}
+        </div>
+
+        {showCustomColor ? (
+          <div className="grid grid-cols-[88px_1fr] gap-3 items-center">
+            <input
+              type="color"
+              className="h-12 w-full cursor-pointer rounded-xl border border-white/10 bg-black p-1"
+              value={colorValue || '#c41e3a'}
+              onChange={e => setEditingItem({ ...editingItem, [field]: e.target.value })}
+            />
+            <input
+              placeholder="#c41e3a"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={colorValue}
+              onChange={e => setEditingItem({ ...editingItem, [field]: e.target.value })}
+            />
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const toggleScheduleGroupDay = (day: string) => {
+    setEditingItem((current: any) => {
+      const currentDays = Array.isArray(current?.days) ? current.days : [];
+      const nextDays = currentDays.includes(day)
+        ? currentDays.filter((item: string) => item !== day)
+        : [...currentDays, day];
+
+      return {
+        ...current,
+        days: WEEK_DAYS.filter(weekDay => nextDays.includes(weekDay)),
+      };
+    });
+  };
+
 	  const getRegistrationsByCoach = (competition: any) => {
     const competitionRegistrations = registrationOptions.filter(registration => registration.competitionId === competition._id);
     const coachRows = (competition.coaches || []).map((coach: any) => ({
@@ -443,7 +567,19 @@ export default function AdminPanel() {
       return {
         ...cleanItem,
         type: cleanItem.type || '',
+        color: cleanItem.color || '',
         trainerColor: '',
+      };
+    }
+
+    if (activeTab === 'schedule-groups') {
+      return {
+        ...cleanItem,
+        days: Array.isArray(cleanItem.days) ? cleanItem.days.filter(Boolean) : [],
+        type: cleanItem.type || '',
+        color: cleanItem.color || '',
+        note: cleanItem.note || '',
+        order: Number(cleanItem.order || 0),
       };
     }
 
@@ -1020,6 +1156,7 @@ export default function AdminPanel() {
 	              value={editingItem.type || ''}
 	              onChange={e => setEditingItem({...editingItem, type: e.target.value})}
 	            />
+              <ColorField label="Culoare" field="color" />
 		            <div>
 	              <select
 	                className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
@@ -1044,7 +1181,103 @@ export default function AdminPanel() {
 	              className="w-full bg-black border border-white/10 p-4 rounded-xl"
 	              value={editingItem.trainer || ''}
 	              onChange={e => setEditingItem({...editingItem, trainer: e.target.value})}
-	            />
+            />
+          </div>
+        );
+      case 'schedule-groups':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <select
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.location || ''}
+                onChange={e => setEditingItem({ ...editingItem, location: e.target.value })}
+              >
+                <option value="">Locatie</option>
+                {(locationConfigOptions.length > 0 ? locationConfigOptions : [{ name: 'Ghencea' }, { name: 'Militari' }]).map((location: any) => (
+                  <option key={location._id || location.name} value={location.name}>{location.name}</option>
+                ))}
+              </select>
+              <input
+                placeholder="Interval orar (ex: 20:30 - 22:00)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.time || ''}
+                onChange={e => setEditingItem({ ...editingItem, time: e.target.value })}
+              />
+            </div>
+            <input
+              placeholder="Nume grupa / disciplina (ex: Kickboxing)"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={editingItem.title || ''}
+              onChange={e => setEditingItem({ ...editingItem, title: e.target.value })}
+            />
+            <input
+              placeholder="Tag afisat (ex: Adulti, Avansati, Beginners)"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={editingItem.type || ''}
+              onChange={e => setEditingItem({ ...editingItem, type: e.target.value })}
+            />
+            <ColorField label="Culoare" field="color" />
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Zile grupa</p>
+              <div className="flex flex-wrap gap-2">
+                {WEEK_DAYS.map(day => {
+                  const selected = Array.isArray(editingItem.days) && editingItem.days.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => toggleScheduleGroupDay(day)}
+                      className={`rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-all ${
+                        selected
+                          ? 'border-accent bg-accent text-white'
+                          : 'border-white/10 bg-black text-white/45 hover:border-accent hover:text-accent'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <select
+                className="w-full bg-black border border-white/10 p-4 rounded-xl text-white [color-scheme:dark]"
+                value={editingItem.trainerId || ''}
+                onChange={e => {
+                  const coach = coachOptions.find(item => (item._id || item.id) === e.target.value);
+                  setEditingItem({
+                    ...editingItem,
+                    trainerId: e.target.value,
+                    trainer: coach?.name || '',
+                  });
+                }}
+              >
+                <option className="bg-black text-white" value="">Alege antrenor</option>
+                {coachOptions.map(coach => (
+                  <option className="bg-black text-white" key={coach._id || coach.id} value={coach._id || coach.id}>{coach.name}</option>
+                ))}
+              </select>
+            </div>
+            <input
+              placeholder="Nume coach afisat"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={editingItem.trainer || ''}
+              onChange={e => setEditingItem({ ...editingItem, trainer: e.target.value })}
+            />
+            <textarea
+              placeholder="Nota scurta optionala despre grupa"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl min-h-[110px]"
+              value={editingItem.note || ''}
+              onChange={e => setEditingItem({ ...editingItem, note: e.target.value })}
+            />
+            <input
+              type="number"
+              placeholder="Ordine afisare (ex: 1)"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={editingItem.order || ''}
+              onChange={e => setEditingItem({ ...editingItem, order: e.target.value })}
+            />
           </div>
         );
       case 'config':
@@ -1678,6 +1911,7 @@ export default function AdminPanel() {
 	    { id: 'design', label: 'Design', icon: MonitorPlay },
     { id: 'martial-arts', label: 'Arte Marțiale', icon: Dumbbell },
     { id: 'schedule', label: 'Program', icon: Calendar },
+    { id: 'schedule-groups', label: 'Grupe Program', icon: Calendar },
 	    { id: 'coaches', label: 'Antrenori', icon: Users },
 	    { id: 'fight-galas', label: 'Gale', icon: Award },
 	    { id: 'competitions', label: 'Competitii', icon: Trophy },
@@ -2471,6 +2705,96 @@ export default function AdminPanel() {
                         </div>
                       </div>
                     ))
+                  )}
+                </div>
+              ) : activeTab === 'schedule-groups' ? (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {items.length === 0 ? (
+                    <div className="col-span-full py-20 text-center text-white/10 bg-black/20 rounded-2xl border border-dashed border-white/5">
+                      Nu exista grupe configurate momentan.
+                    </div>
+                  ) : (
+                    items.map((item, idx) => {
+                      const days = Array.isArray(item.days) ? item.days : [];
+
+                      return (
+                        <div
+                          key={item._id || idx}
+                          className="group relative overflow-hidden rounded-3xl border border-white/10 bg-muted/60 shadow-[0_16px_50px_rgba(0,0,0,0.28)]"
+                        >
+                          <div className="absolute inset-0 bg-[linear-gradient(145deg,#171717_0%,#070707_48%,#250606_100%)]" />
+                          <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/12 blur-3xl" />
+
+                          <div className="relative flex min-h-[320px] flex-col justify-between p-5">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-white/55">
+                                  {String(idx + 1).padStart(2, '0')}
+                                </span>
+                                <span className="truncate text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+                                  {item.type || 'Grupa'}
+                                </span>
+                              </div>
+                              <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                <button
+                                  onClick={() => handleEdit(item)}
+                                  className="rounded-xl border border-white/10 bg-black/50 p-2 text-white/70 transition-all hover:border-accent hover:text-accent"
+                                >
+                                  <Settings size={14} />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(item._id)}
+                                  className="rounded-xl border border-white/10 bg-black/50 p-2 text-white/70 transition-all hover:border-red-500 hover:text-red-400"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="mt-5">
+                              <h4 className="truncate text-2xl font-display font-black uppercase tracking-tight text-white">
+                                {item.title || 'Grupa noua'}
+                              </h4>
+                              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.08em] text-white/70">
+                                {item.time || 'Interval neconfigurat'}
+                              </p>
+                              <p className="mt-2 text-[10px] font-black uppercase tracking-[0.18em] text-accent">
+                                {item.trainer || 'Coach neasignat'}
+                              </p>
+                            </div>
+
+                            <div className="mt-5 space-y-4">
+                              <div className="flex flex-wrap gap-2">
+                                {days.length > 0 ? days.map((day: string) => (
+                                  <span key={`${item._id || idx}-${day}`} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white/60">
+                                    {day}
+                                  </span>
+                                )) : (
+                                  <span className="rounded-full border border-dashed border-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+                                    Zile neconfigurate
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
+                                  {item.location || 'Locatie'}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
+                                  Ordine {item.order || 0}
+                                </span>
+                              </div>
+
+                              {item.note && (
+                                <p className="text-sm leading-relaxed text-white/55">
+                                  {item.note}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               ) : activeTab === 'schedule' ? (
