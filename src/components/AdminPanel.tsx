@@ -21,6 +21,7 @@ export default function AdminPanel() {
   const [coachOptions, setCoachOptions] = useState<any[]>([]);
   const [registrationOptions, setRegistrationOptions] = useState<any[]>([]);
   const [locationConfigOptions, setLocationConfigOptions] = useState<any[]>([]);
+  const [designSettings, setDesignSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [expandedRegistrationGroups, setExpandedRegistrationGroups] = useState<Record<string, boolean>>({});
@@ -84,6 +85,16 @@ export default function AdminPanel() {
       facebookUrl: item.facebookUrl || '',
       youtubeUrl: item.youtubeUrl || '',
       whatsappUrl: item.whatsappUrl || '',
+      contactPhone: item.contactPhone || '',
+      contactEmail: item.contactEmail || '',
+      receptionLabel1: item.receptionLabel1 || 'Luni - Vineri',
+      receptionHours1: item.receptionHours1 || '08:00 - 22:00',
+      receptionLabel2: item.receptionLabel2 || 'Sambata',
+      receptionHours2: item.receptionHours2 || '10:00 - 15:00',
+      receptionLabel3: item.receptionLabel3 || 'Duminica',
+      receptionHours3: item.receptionHours3 || 'Inchis',
+      disableScheduleAll: Boolean(item.disableScheduleAll),
+      disableScheduleGroups: Boolean(item.disableScheduleGroups),
       palmaresProfiles,
       palmaresCardsText: serializePalmaresCards(palmaresProfiles),
       palmaresCards: createLegacyPalmaresCards(palmaresProfiles),
@@ -123,9 +134,11 @@ export default function AdminPanel() {
       const shouldLoadCoaches = ['schedule', 'schedule-groups', 'coaches', 'competitions'].includes(activeTab);
       const shouldLoadRegistrations = ['competitions', 'registrations'].includes(activeTab);
       const shouldLoadLocationConfigs = ['schedule', 'schedule-groups', 'config', 'coaches', 'design'].includes(activeTab);
+      const shouldLoadDesign = ['schedule', 'schedule-groups', 'design'].includes(activeTab);
       const coaches = shouldLoadCoaches ? await api.getCoaches() : coachOptions;
       const registrations = shouldLoadRegistrations ? await api.getCompetitionRegistrations() : registrationOptions;
       const locationConfigs = shouldLoadLocationConfigs ? await api.getLocationConfigs() : locationConfigOptions;
+      const design = shouldLoadDesign ? await api.getDesign() : designSettings;
 
       if (shouldLoadCoaches) {
         setCoachOptions(Array.isArray(coaches) ? coaches : []);
@@ -137,6 +150,10 @@ export default function AdminPanel() {
 
       if (shouldLoadLocationConfigs) {
         setLocationConfigOptions(Array.isArray(locationConfigs) ? locationConfigs : []);
+      }
+
+      if (shouldLoadDesign) {
+        setDesignSettings(buildDesignItem(design || {}));
       }
 
       switch (activeTab) {
@@ -160,7 +177,27 @@ export default function AdminPanel() {
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
-      setLoading(false);
+	    setLoading(false);
+	  }
+	};
+
+  const handleScheduleVisibilityToggle = async (
+    field: 'disableScheduleAll' | 'disableScheduleGroups',
+  ) => {
+    const currentSettings = buildDesignItem(designSettings || {});
+    const nextSettings = {
+      ...currentSettings,
+      [field]: !Boolean(currentSettings[field]),
+    };
+
+    try {
+      const savedSettings = currentSettings._id
+        ? await api.updateItem('design', currentSettings._id, nextSettings)
+        : await api.addItem('design', nextSettings);
+
+      setDesignSettings(buildDesignItem(savedSettings || nextSettings));
+    } catch (error) {
+      alert('Setarea de afisare nu a putut fi salvata.');
     }
   };
 
@@ -558,6 +595,14 @@ export default function AdminPanel() {
         facebookUrl: cleanItem.facebookUrl || designItem.facebookUrl || '',
         youtubeUrl: cleanItem.youtubeUrl || designItem.youtubeUrl || '',
         whatsappUrl: cleanItem.whatsappUrl || designItem.whatsappUrl || '',
+        contactPhone: cleanItem.contactPhone || designItem.contactPhone || '',
+        contactEmail: cleanItem.contactEmail || designItem.contactEmail || '',
+        receptionLabel1: cleanItem.receptionLabel1 || designItem.receptionLabel1 || 'Luni - Vineri',
+        receptionHours1: cleanItem.receptionHours1 || designItem.receptionHours1 || '08:00 - 22:00',
+        receptionLabel2: cleanItem.receptionLabel2 || designItem.receptionLabel2 || 'Sambata',
+        receptionHours2: cleanItem.receptionHours2 || designItem.receptionHours2 || '10:00 - 15:00',
+        receptionLabel3: cleanItem.receptionLabel3 || designItem.receptionLabel3 || 'Duminica',
+        receptionHours3: cleanItem.receptionHours3 || designItem.receptionHours3 || 'Inchis',
         palmaresProfiles,
         palmaresCards: createLegacyPalmaresCards(palmaresProfiles),
       };
@@ -1039,6 +1084,65 @@ export default function AdminPanel() {
         </div>
       ) : editingItem?.designSection === 'socials' ? (
         <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <input
+              placeholder="Telefon contact"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={editingItem.contactPhone || ''}
+              onChange={e => setEditingItem({ ...editingItem, contactPhone: e.target.value })}
+            />
+            <input
+              placeholder="Email contact"
+              className="w-full bg-black border border-white/10 p-4 rounded-xl"
+              value={editingItem.contactEmail || ''}
+              onChange={e => setEditingItem({ ...editingItem, contactEmail: e.target.value })}
+            />
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Program receptie</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <input
+                placeholder="Eticheta 1 (ex: Luni - Vineri)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.receptionLabel1 || ''}
+                onChange={e => setEditingItem({ ...editingItem, receptionLabel1: e.target.value })}
+              />
+              <input
+                placeholder="Interval 1 (ex: 08:00 - 22:00)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.receptionHours1 || ''}
+                onChange={e => setEditingItem({ ...editingItem, receptionHours1: e.target.value })}
+              />
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <input
+                placeholder="Eticheta 2 (ex: Sambata)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.receptionLabel2 || ''}
+                onChange={e => setEditingItem({ ...editingItem, receptionLabel2: e.target.value })}
+              />
+              <input
+                placeholder="Interval 2 (ex: 10:00 - 15:00)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.receptionHours2 || ''}
+                onChange={e => setEditingItem({ ...editingItem, receptionHours2: e.target.value })}
+              />
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <input
+                placeholder="Eticheta 3 (ex: Duminica)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.receptionLabel3 || ''}
+                onChange={e => setEditingItem({ ...editingItem, receptionLabel3: e.target.value })}
+              />
+              <input
+                placeholder="Interval 3 (ex: Inchis)"
+                className="w-full bg-black border border-white/10 p-4 rounded-xl"
+                value={editingItem.receptionHours3 || ''}
+                onChange={e => setEditingItem({ ...editingItem, receptionHours3: e.target.value })}
+              />
+            </div>
+          </div>
           <input
             placeholder="Link Instagram"
             className="w-full bg-black border border-white/10 p-4 rounded-xl"
@@ -1064,7 +1168,7 @@ export default function AdminPanel() {
             onChange={e => setEditingItem({ ...editingItem, whatsappUrl: e.target.value })}
           />
           <p className="text-xs text-white/35 leading-relaxed">
-            Linkurile de aici vor fi folosite pentru iconitele sociale din footer.
+            Linkurile de aici vor fi folosite pentru iconitele sociale din footer, iar telefonul, emailul si programul receptiei in zonele publice ale site-ului.
           </p>
         </div>
       ) : (
@@ -2232,6 +2336,11 @@ export default function AdminPanel() {
                     <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
                       <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
                         <div className="space-y-3 text-sm text-white/55">
+                          <p><span className="text-white/30">Telefon:</span> {items[0]?.contactPhone || 'Neconfigurat'}</p>
+                          <p><span className="text-white/30">Email:</span> {items[0]?.contactEmail || 'Neconfigurat'}</p>
+                          <p><span className="text-white/30">Receptie 1:</span> {(items[0]?.receptionLabel1 || 'Neconfigurat')} {items[0]?.receptionHours1 ? `- ${items[0]?.receptionHours1}` : ''}</p>
+                          <p><span className="text-white/30">Receptie 2:</span> {(items[0]?.receptionLabel2 || 'Neconfigurat')} {items[0]?.receptionHours2 ? `- ${items[0]?.receptionHours2}` : ''}</p>
+                          <p><span className="text-white/30">Receptie 3:</span> {(items[0]?.receptionLabel3 || 'Neconfigurat')} {items[0]?.receptionHours3 ? `- ${items[0]?.receptionHours3}` : ''}</p>
                           <p><span className="text-white/30">Instagram:</span> {items[0]?.instagramUrl || 'Neconfigurat'}</p>
                           <p><span className="text-white/30">Facebook:</span> {items[0]?.facebookUrl || 'Neconfigurat'}</p>
                           <p><span className="text-white/30">YouTube:</span> {items[0]?.youtubeUrl || 'Neconfigurat'}</p>
@@ -2240,7 +2349,7 @@ export default function AdminPanel() {
                       </div>
                       <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
                         <p className="text-sm leading-relaxed text-white/55">
-                          Aici setezi linkurile pentru iconitele sociale din footer: Instagram, Facebook, YouTube si WhatsApp.
+                          Aici setezi linkurile pentru iconitele sociale din footer, plus telefonul si emailul afisate in sectiunea Contact.
                         </p>
                         <button
                           onClick={handleSocialLinksEdit}
@@ -2708,7 +2817,28 @@ export default function AdminPanel() {
                   )}
                 </div>
               ) : activeTab === 'schedule-groups' ? (
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Afisare grupe in frontend</p>
+                      <p className="mt-1 text-xs text-white/40">
+                        Cand dezactivezi grupele, in site ramane vizibil doar programul clasic.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleScheduleVisibilityToggle('disableScheduleGroups')}
+                      className={cn(
+                        'rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-all',
+                        designSettings?.disableScheduleGroups
+                          ? 'border-emerald-500/35 bg-emerald-500/15 text-emerald-200'
+                          : 'border-red-500/35 bg-red-500/15 text-red-200',
+                      )}
+                    >
+                      {designSettings?.disableScheduleGroups ? 'Enable Grupe' : 'Disabled Grupe'}
+                    </button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {items.length === 0 ? (
                     <div className="col-span-full py-20 text-center text-white/10 bg-black/20 rounded-2xl border border-dashed border-white/5">
                       Nu exista grupe configurate momentan.
@@ -2796,8 +2926,30 @@ export default function AdminPanel() {
                       );
                     })
                   )}
+                  </div>
                 </div>
               ) : activeTab === 'schedule' ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-accent">Afisare program clasic in frontend</p>
+                      <p className="mt-1 text-xs text-white/40">
+                        Cand dezactivezi programul clasic, in site raman vizibile doar grupele.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleScheduleVisibilityToggle('disableScheduleAll')}
+                      className={cn(
+                        'rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-all',
+                        designSettings?.disableScheduleAll
+                          ? 'border-emerald-500/35 bg-emerald-500/15 text-emerald-200'
+                          : 'border-red-500/35 bg-red-500/15 text-red-200',
+                      )}
+                    >
+                      {designSettings?.disableScheduleAll ? 'Enable Program' : 'Disabled All'}
+                    </button>
+                  </div>
                 <div className="overflow-x-auto">
                   <div className="min-w-[800px]">
                     <div className="grid grid-cols-6 gap-2 mb-4">
@@ -2847,6 +2999,7 @@ export default function AdminPanel() {
                       ))}
                     </div>
                   </div>
+                </div>
                 </div>
               ) : (
                 <div className="space-y-4">

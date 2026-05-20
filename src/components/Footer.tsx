@@ -10,9 +10,15 @@ type SocialLinkItem = {
   label: string;
 };
 
+type ReceptionRow = {
+  label: string;
+  value: string;
+};
+
 export default function Footer() {
   const [siteLogo, setSiteLogo] = useState('');
   const [socialLinks, setSocialLinks] = useState<SocialLinkItem[]>([]);
+  const [receptionRows, setReceptionRows] = useState<ReceptionRow[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -29,11 +35,26 @@ export default function Footer() {
           { href: result?.youtubeUrl || '', icon: Youtube, label: 'YouTube' },
           { href: result?.whatsappUrl || '', icon: MessageCircle, label: 'WhatsApp' },
         ]);
+        setReceptionRows([
+          {
+            label: result?.receptionLabel1 || 'Luni - Vineri',
+            value: result?.receptionHours1 || '08:00 - 22:00',
+          },
+          {
+            label: result?.receptionLabel2 || 'Sambata',
+            value: result?.receptionHours2 || '10:00 - 15:00',
+          },
+          {
+            label: result?.receptionLabel3 || 'Duminica',
+            value: result?.receptionHours3 || 'Inchis',
+          },
+        ]);
       })
       .catch(() => {
         if (!mounted) return;
         setSiteLogo('');
         setSocialLinks([]);
+        setReceptionRows([]);
       });
 
     return () => {
@@ -118,18 +139,16 @@ export default function Footer() {
           <div>
             <h4 className="mb-8 text-xs font-bold uppercase tracking-widest text-white">Receptie</h4>
             <ul className="space-y-4 text-sm text-white/50">
-              <li className="flex justify-between">
-                <span>Luni - Vineri</span>
-                <span className="text-white">08:00 - 22:00</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Sambata</span>
-                <span className="text-white">10:00 - 15:00</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Duminica</span>
-                <span className="text-white">Inchis</span>
-              </li>
+              {(receptionRows.length > 0 ? receptionRows : [
+                { label: 'Luni - Vineri', value: '08:00 - 22:00' },
+                { label: 'Sambata', value: '10:00 - 15:00' },
+                { label: 'Duminica', value: 'Inchis' },
+              ]).map((row) => (
+                <li key={`${row.label}-${row.value}`} className="flex justify-between gap-4">
+                  <span>{row.label}</span>
+                  <span className="text-right text-white">{row.value}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

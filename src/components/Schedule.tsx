@@ -55,6 +55,11 @@ interface ScheduleEntry {
   order: number;
 }
 
+interface ScheduleDisplaySettings {
+  disableScheduleAll?: boolean;
+  disableScheduleGroups?: boolean;
+}
+
 const premiumCardClass = 'bg-[linear-gradient(145deg,rgba(255,255,255,0.075)_0%,rgba(255,255,255,0.03)_44%,rgba(163,0,0,0.12)_100%)] backdrop-blur-sm border border-white/10 shadow-[0_18px_60px_rgba(0,0,0,0.25)]';
 
 const normalizeText = (value?: string) => (
@@ -192,6 +197,7 @@ export default function Schedule() {
   const [activeLocation, setActiveLocation] = useState('Ghencea');
   const [schedule, setSchedule] = useState<ClassItem[]>([]);
   const [scheduleGroups, setScheduleGroups] = useState<GroupItem[]>([]);
+  const [displaySettings, setDisplaySettings] = useState<ScheduleDisplaySettings>({});
   const [isDesktopViewport, setIsDesktopViewport] = useState(() => (
     typeof window !== 'undefined' ? window.innerWidth >= 640 : false
   ));
@@ -199,31 +205,45 @@ export default function Schedule() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [scheduleResults, scheduleGroupResults] = await Promise.all([
+        const [scheduleResults, scheduleGroupResults, designResults] = await Promise.all([
           api.getSchedule(),
           api.getScheduleGroups(),
+          api.getDesign(),
         ]);
 
         setSchedule(Array.isArray(scheduleResults) ? scheduleResults : []);
         setScheduleGroups(Array.isArray(scheduleGroupResults) ? scheduleGroupResults : []);
+        setDisplaySettings({
+          disableScheduleAll: Boolean(designResults?.disableScheduleAll),
+          disableScheduleGroups: Boolean(designResults?.disableScheduleGroups),
+        });
       } catch (error) {
         console.error('Failed to fetch schedule:', error);
         setSchedule([]);
         setScheduleGroups([]);
+        setDisplaySettings({});
       }
     };
 
     fetchData();
   }, []);
 
+  const visibleSchedule = useMemo(() => (
+    displaySettings.disableScheduleAll ? [] : schedule
+  ), [displaySettings.disableScheduleAll, schedule]);
+
+  const visibleScheduleGroups = useMemo(() => (
+    displaySettings.disableScheduleGroups ? [] : scheduleGroups
+  ), [displaySettings.disableScheduleGroups, scheduleGroups]);
+
   const locations = useMemo(() => {
     const uniqueLocations = Array.from(new Set([
-      ...schedule.map(item => item.location),
-      ...scheduleGroups.map(item => item.location),
+      ...visibleSchedule.map(item => item.location),
+      ...visibleScheduleGroups.map(item => item.location),
     ].filter(Boolean)));
 
     return uniqueLocations.length > 0 ? uniqueLocations : ['Ghencea', 'Militari'];
-  }, [schedule, scheduleGroups]);
+  }, [visibleSchedule, visibleScheduleGroups]);
 
   useEffect(() => {
     if (!locations.includes(activeLocation)) {
@@ -253,7 +273,7 @@ export default function Schedule() {
   }, []);
 
   const unifiedEntries = useMemo(() => {
-    const classEntries: ScheduleEntry[] = schedule.map((item, index) => ({
+    const classEntries: ScheduleEntry[] = visibleSchedule.map((item, index) => ({
       id: item._id || `schedule-${index}`,
       location: item.location,
       day: item.day,
@@ -266,7 +286,7 @@ export default function Schedule() {
       order: 0,
     }));
 
-    const groupEntries: ScheduleEntry[] = scheduleGroups.flatMap((item, index) => (
+    const groupEntries: ScheduleEntry[] = visibleScheduleGroups.flatMap((item, index) => (
       (Array.isArray(item.days) ? item.days : [])
         .filter(Boolean)
         .map(day => ({
@@ -287,7 +307,7 @@ export default function Schedule() {
     return [...classEntries, ...groupEntries]
       .filter(entry => entry.location === activeLocation && DAYS.includes(entry.day))
       .sort(sortEntries);
-  }, [activeLocation, schedule, scheduleGroups]);
+  }, [activeLocation, visibleSchedule, visibleScheduleGroups]);
 
   const timeSlots = useMemo(() => {
     const slots = Array.from(new Set(
